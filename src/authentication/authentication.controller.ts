@@ -1,20 +1,23 @@
 import * as bcrypt from "bcrypt";
 import * as express from "express";
 import * as jwt from "jsonwebtoken";
-import TokenData from "../interfaces/tokenData.interface";
-import UserWithThatEmailAlreadyExistsException from "../exceptions/UserWithThatEmailAlreadyExistsException";
 import WrongCredentialsException from "../exceptions/WrongCredentialsException";
 import Controller from "../interfaces/controller.interface";
+import DataStoredInToken from "../interfaces/dataStoredInToken";
+import TokenData from "../interfaces/tokenData.interface";
 import validationMiddleware from "../middleware/validation.middleware";
 import CreateUserDto from "../users/user.dto";
 import User from "../users/user.interface";
 import userModel from "../users/user.model";
+import AuthenticationService from "./authentication.service";
 import LogInDto from "./login.dto";
-import DataStoredInToken from "../interfaces/dataStoredInToken";
+
+import UserWithThatEmailAlreadyExistsException from "../exceptions/UserWithThatEmailAlreadyExistsException";
 
 class AuthenticationController implements Controller {
   public path = "/auth";
   public router = express.Router();
+  public authenticationService = new AuthenticationService();
   private user = userModel;
 
   constructor() {
@@ -41,19 +44,14 @@ class AuthenticationController implements Controller {
     next: express.NextFunction
   ) => {
     const userData: CreateUserDto = request.body;
-
-    if (await this.user.findOne({ email: userData.email })) {
-      next(new UserWithThatEmailAlreadyExistsException(userData.email));
-    } else {
-      const hashedPassword = await bcrypt.hash(userData.password, 10);
-      const user = await this.user.create({
-        ...userData,
-        password: hashedPassword,
-      });
-      user.password = undefined;
-      const tokenData = this.createToken(user);
-      response.setHeader("Set-Cookie", [this.createCookie(tokenData)]);
+    try {
+      const { cookie, user } = await this.authenticationService.register(
+        userData
+      );
+      response.setHeader("Set-Cookie", [cookie]);
       response.send(user);
+    } catch (error) {
+      next(error);
     }
   };
 
@@ -62,17 +60,16 @@ class AuthenticationController implements Controller {
     response: express.Response,
     next: express.NextFunction
   ) => {
-    const loginData: LogInDto = request.body;
-    const user = await this.user.findOne({ email: loginData.email });
+    const logInData: LogInDto = request.body;
+    const user = await this.user.findOne({ email: logInData.email });
 
     if (user) {
       const isPasswordMatching = await bcrypt.compare(
-        loginData.password,
-        user.password
+        logInData.password,
+        user.get("password", null, { getters: false })
       );
 
       if (isPasswordMatching) {
-        user.password = undefined;
         const tokenData = this.createToken(user);
         response.setHeader("Set-Cookie", [this.createCookie(tokenData)]);
         response.send(user);
