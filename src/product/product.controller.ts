@@ -47,20 +47,16 @@ class ProductController {
     let discount;
     if (product.discount) {
       discount = `product discount is ${product.discount}`;
-      response.json({
-        discount: discount
-      })
     } else if (product.category.discount) {
       discount = `Category discount is ${product.category.discount}`;
-      response.json({
-        discount: discount
-      })
     } else {
       discount = -1;
-      response.json({
-        discount: discount
-      })
     }
+    response.statusCode(200).json({
+      data:{discount},
+      message: "success",
+      status: 200
+    });
   };
 }
 
