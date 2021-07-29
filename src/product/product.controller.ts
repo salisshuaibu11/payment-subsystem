@@ -8,7 +8,7 @@ class ProductController {
   public router = express.Router();
   private products = [{
     id: "1",
-    name: "Kaftan",
+    name: "T Shirt",
     userId: "123",
     code: "ww",
     amount: 200,
