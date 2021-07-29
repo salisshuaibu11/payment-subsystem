@@ -9,9 +9,7 @@ class ProductController {
   private products = [{
     id: "1",
     name: "T Shirt",
-    userId: "123",
     code: "ww",
-    amount: 200,
     discount: null,
     category: {
       name: "Cloth",
@@ -20,10 +18,8 @@ class ProductController {
   }, {
     id: "2",
     name: "Kaftan",
-    userId: "156",
     code: "gg",
-    amount: 200,
-    discount: 20,
+    discount: 5,
     category: {
       name: "Cloth",
       discount: null
@@ -43,20 +39,31 @@ class ProductController {
     response: express.Response
   ) => {
     const PRODUCT_CODE = request.body.code;
+    const AMOUNT = parseInt(request.body.amount);
+    const USER_ID = request.body.userId;
     const product = this.products.find(product => product.code === PRODUCT_CODE);
     let discount;
-    if (product.discount) {
-      discount = `product discount is ${product.discount}`;
-    } else if (product.category.discount) {
-      discount = `Category discount is ${product.category.discount}`;
+    let percentage;
+
+    if (USER_ID) {
+      if (product.discount) {
+        discount = `${product.discount}`;
+        percentage = (discount / AMOUNT) * 100;
+      } else if (product.category.discount) {
+        discount = `${product.category.discount}`;
+        percentage = (discount / AMOUNT) * 100;
+      } else {
+        discount = -1;
+      }
+      response.status(200).json({
+        discount,
+        percentage: parseInt(percentage)
+      });
     } else {
-      discount = -1;
+      response.json({
+        message: "Unauthorized"
+      })
     }
-    response.statusCode(200).json({
-      data:{discount},
-      message: "success",
-      status: 200
-    });
   };
 }
 
