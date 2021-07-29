@@ -9,7 +9,7 @@ class App {
   constructor(controllers: Controller[]) {
     this.app = express();
 
-    this.connectToTheDatabase();
+    //this.connectToTheDatabase();
     this.initializeMiddlewares();
     this.initializeControllers(controllers);
   }
@@ -21,12 +21,12 @@ class App {
   }
 
   private initializeMiddlewares() {
-    this.app.use(bodyParser.json());
+    this.app.use(express.json());
   }
 
   private initializeControllers(controllers) {
     controllers.forEach((controller) => {
-      this.app.use("/", controller.router);
+      this.app.use("/api", controller.router);
     });
   }
 

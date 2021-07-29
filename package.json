@@ -6,17 +6,9 @@
   "scripts": {
     "dev": "ts-node ./src/server.ts"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/salisshuaibu11/payment-subsystem.git"
-  },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/salisshuaibu11/payment-subsystem/issues"
-  },
-  "homepage": "https://github.com/salisshuaibu11/payment-subsystem#readme",
   "dependencies": {
     "bcrypt": "^5.0.1",
     "body-parser": "^1.19.0",
